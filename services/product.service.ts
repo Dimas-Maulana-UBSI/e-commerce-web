@@ -1,5 +1,4 @@
 import { AxiosError } from "axios";
-import api from "./api.service";
 import { ApiResponse } from "@/types/Api.type";
 import { Product, ProductListResponse } from "@/types/Product";
 import { SortType } from "@/types/Sort.type";

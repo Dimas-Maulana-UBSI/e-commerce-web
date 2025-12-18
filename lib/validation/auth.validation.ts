@@ -1,5 +1,3 @@
-// this is example of lib validation, please remove if don't use it
-
 import { z } from "zod";
 
 export const loginSchema = z.object({

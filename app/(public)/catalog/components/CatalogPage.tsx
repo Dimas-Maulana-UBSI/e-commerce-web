@@ -33,6 +33,7 @@ const CatalogPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(8);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [sort, setSort] = useState<SortType>("newest");
 
   // the real values used for filtering
   const [minPrice, setMinPrice] = useState<number | null>(null);
@@ -47,7 +48,8 @@ const CatalogPage: React.FC = () => {
     limit,
     selectedCategories[selectedCategories.length - 1],
     minPrice,
-    maxPrice
+    maxPrice,
+    sort
   );
 
   // debounce minPrice
@@ -153,7 +155,10 @@ const CatalogPage: React.FC = () => {
                   <span className="hidden md:inline text-md font-bold">
                     Sort
                   </span>
-                  <Select>
+                  <Select
+                    onValueChange={(val) => setSort(val as SortType)}
+                    value={sort}
+                  >
                     <SelectTrigger className="w-full md:w-42 rounded-xl">
                       <SelectValue placeholder="Sort By" />
                     </SelectTrigger>

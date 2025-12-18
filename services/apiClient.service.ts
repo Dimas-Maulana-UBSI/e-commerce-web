@@ -1,9 +1,9 @@
-// src/services/apiClient.ts
 import axios from 'axios';
 import https from "https";
+import { APIConfiguration } from '@/config/api.config';
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: APIConfiguration.baseUrl,
   httpsAgent: new https.Agent({
     rejectUnauthorized: false, // ⛔ ignore self-signed cert
   }),

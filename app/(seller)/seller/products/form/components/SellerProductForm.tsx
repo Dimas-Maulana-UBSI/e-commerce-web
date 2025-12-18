@@ -16,10 +16,18 @@ import React, { useEffect } from "react";
 import useSellerProductForm from "./useSellerProductForm";
 
 const SellerProductForm: React.FC = () => {
-  const { data, isLoading } = useCategories(1, 20);
-  const { register, handleSubmit, errors, onSubmit, setValue, watch } =
-    useSellerProductForm();
+  const { data, isLoading: isLoadingCategories } = useCategories(1, 20);
+  const {
+    register,
+    handleSubmit,
+    errors,
+    onSubmit,
+    setValue,
+    watch,
+    isPending,
+  } = useSellerProductForm();
   const images = watch("images");
+  const categoryId = watch("categoryId");
 
   useEffect(() => {}, [images]);
 
@@ -30,19 +38,29 @@ const SellerProductForm: React.FC = () => {
         {...register("title")}
         error={errors && errors.title?.message}
       />
-      <Select>
-        <SelectTrigger className="w-full mb-4">
-          <SelectValue placeholder="Category" />
-        </SelectTrigger>
-        <SelectContent>
-          {!isLoading &&
-            data?.categories.map((opt) => (
-              <SelectItem key={opt.id} value={opt.id.toString()}>
-                {opt.name}
-              </SelectItem>
-            ))}
-        </SelectContent>
-      </Select>
+      <div className="mb-4">
+        <Select
+          onValueChange={(val) => setValue("categoryId", Number(val))}
+          value={categoryId?.toString()}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {!isLoadingCategories &&
+              data?.categories.map((opt) => (
+                <SelectItem key={opt.id} value={opt.id.toString()}>
+                  {opt.name}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+        {errors.categoryId && (
+          <p className="text-red-500 text-xs mt-1">
+            {errors.categoryId.message}
+          </p>
+        )}
+      </div>
       <InputComp
         label="Price"
         type="number"
@@ -67,8 +85,13 @@ const SellerProductForm: React.FC = () => {
       />
       {errors.images && <p className="text-red-500">{errors.images.message}</p>}
 
-      <Button className="w-full" size={"sm"} type="submit">
-        Save
+      <Button
+        className="w-full"
+        size={"sm"}
+        type="submit"
+        disabled={isPending}
+      >
+        {isPending ? "Saving..." : "Save"}
       </Button>
     </form>
   );

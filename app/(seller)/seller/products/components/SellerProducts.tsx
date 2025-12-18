@@ -27,14 +27,27 @@ import Link from "next/link";
 const SellerProducts: React.FC = () => {
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
+  const [search, setSearch] = React.useState("");
 
-  const { data, isLoading, isError, isPending } = useSellerProducts(
+  const { data, isLoading, isError } = useSellerProducts(
     page,
-    limit
+    limit,
+    undefined,
+    search
   );
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setPage(1); // Reset to first page on search
+  };
 
   if (isError)
     return <div className="p-10 text-red-500">Failed to load products</div>;
+
+  const total = data?.pagination?.total || 0;
+  const totalPages = data?.pagination?.totalPages || 1;
+  const from = (page - 1) * limit + 1;
+  const to = Math.min(page * limit, total);
 
   return (
     <div className="mt-6">
@@ -49,6 +62,8 @@ const SellerProducts: React.FC = () => {
           <input
             type="text"
             placeholder="Search"
+            value={search}
+            onChange={handleSearchChange}
             className="border border-neutral-300 py-2 px-10 rounded-xl w-full bg-white"
           />
           <Search className="absolute text-neutral-500 top-2 left-3 w-5" />
@@ -67,13 +82,31 @@ const SellerProducts: React.FC = () => {
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <TableCell className="font-medium" key={i}>
-                  <Skeleton key={i} className="h-10 w-full rounded-lg" />
+            Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell className="font-medium">
+                  <Skeleton className="h-6 w-6 rounded-lg" />
                 </TableCell>
-              ))}
-            </TableRow>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-12 w-12 rounded-sm" />
+                    <div className="flex flex-col gap-2">
+                      <Skeleton className="h-4 w-32 rounded-lg" />
+                      <Skeleton className="h-4 w-20 rounded-lg" />
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-24 rounded-lg" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-12 rounded-lg" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-20 rounded-lg" />
+                </TableCell>
+              </TableRow>
+            ))
           ) : data?.products.length == 0 ? (
             <TableRow>
               <TableCell className="font-medium text-center" colSpan={5}>
@@ -83,7 +116,7 @@ const SellerProducts: React.FC = () => {
           ) : (
             data?.products.map((p, i) => (
               <TableRow key={p.id}>
-                <TableCell className="font-medium">{i + 1}</TableCell>
+                <TableCell className="font-medium">{from + i}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Image
@@ -106,11 +139,17 @@ const SellerProducts: React.FC = () => {
                 <TableCell>{p.stock}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Eye width={16} className="cursor-pointer" />
-                    <Pencil width={16} className="cursor-pointer" />
+                    <Eye
+                      width={16}
+                      className="cursor-pointer hover:text-primary transition-colors"
+                    />
+                    <Pencil
+                      width={16}
+                      className="cursor-pointer hover:text-primary transition-colors"
+                    />
                     <Trash2
                       width={16}
-                      className="text-accent-red cursor-pointer"
+                      className="text-accent-red cursor-pointer hover:opacity-80 transition-opacity"
                     />
                   </div>
                 </TableCell>
@@ -118,26 +157,49 @@ const SellerProducts: React.FC = () => {
             ))
           )}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={4} className="text-neutral-800 text-sm">
-              Showing 1 to 10 of 60 entries
-            </TableCell>
-            <TableCell className="text-right">
-              <div className="flex justify-between">
-                <span className="text-sm flex items-center gap-2">
-                  <ChevronLeft width={15} />
-                  Previous
-                </span>
-                <span>1</span>
-                <span>2</span>
-                <span className="text-sm flex items-center gap-2">
-                  Next <ChevronRight width={15} />
-                </span>
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
+        {total > 0 && (
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={4} className="text-neutral-800 text-sm">
+                Showing {from} to {to} of {total} entries
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end items-center gap-4">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="text-sm flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft width={15} />
+                    Previous
+                  </button>
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: totalPages }).map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setPage(i + 1)}
+                        className={`text-sm w-8 h-8 rounded-full ${
+                          page === i + 1
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-neutral-100"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="text-sm flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next <ChevronRight width={15} />
+                  </button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        )}
       </Table>
     </div>
   );

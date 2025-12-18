@@ -6,8 +6,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/providers/AuthProvider";
 
 export const metadata: Metadata = {
-  title: "My App",
-  description: "A Next.js app with TanStack Query",
+  title: "Dimas E-commerce",
+  description: "A modern e-commerce application built with Next.js",
 };
 
 export default function RootLayout({
